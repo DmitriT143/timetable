@@ -135,7 +135,7 @@ class MainWindow(QWidget):
 
         for i, r in enumerate(records):
             r = list(r)
-            joinButton = QPushButton("Join")
+            joinButton_tue = QPushButton("Join")
 
             self.monday_table.setItem(i, 0,
                                       QTableWidgetItem(str(r[0])))
@@ -143,9 +143,9 @@ class MainWindow(QWidget):
                                       QTableWidgetItem(str(r[1])))
             self.monday_table.setItem(i, 2,
                                       QTableWidgetItem(str(r[2])))
-            self.monday_table.setCellWidget(i, 3, joinButton)
+            self.monday_table.setCellWidget(i, 3, joinButton_tue)
 
-            joinButton.clicked.connect(lambda ch, num=i: self._change_day_from_table(num))
+            joinButton_tue.clicked.connect(lambda ch, num=i: self._change_day_from_table(num, 1))
 
         self.monday_table.resizeRowsToContents()
 
@@ -167,26 +167,40 @@ class MainWindow(QWidget):
                                        QTableWidgetItem(str(r[2])))
             self.tuesday_table.setCellWidget(i, 3, joinButton)
 
-            joinButton.clicked.connect(lambda ch, num=i: self._change_day_from_table(num))
+            joinButton.clicked.connect(lambda ch, num=i: self._change_day_from_table(num, 2))
 
         self.tuesday_table.resizeRowsToContents()
 
-    def _change_day_from_table(self, rowNum):
+    def _change_day_from_table(self, rowNum, day):
         row = list()
-        for i in range(self.monday_table.columnCount()):
+        if day == 1:
+            for i in range(self.monday_table.columnCount()):
+                try:
+                    row.append(self.monday_table.item(rowNum, i).text())
+                except:
+                    row.append(None)
+                try:
+                    self.cursor.execute(f"UPDATE monday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
+                                        f"WHERE num={rowNum + 1}")
+                    self.conn.commit()
+                except:
+                    QMessageBox.about(self, "Error", "Enter all fields")
+        if day == 2:
+            for i in range(self.tuesday_table.columnCount()):
+                try:
+                    row.append(self.tuesday_table.item(rowNum, i).text())
+                except:
+                    row.append(None)
             try:
-                row.append(self.monday_table.item(rowNum, i).text())
+                self.cursor.execute(f"UPDATE tuesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
+                                    f"WHERE num={rowNum + 1}")
+                self.conn.commit()
             except:
-                row.append(None)
-        try:
-            self.cursor.execute(f"UPDATE monday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
-                                f"WHERE num={rowNum + 1}")
-            self.conn.commit()
-        except:
-            QMessageBox.about(self, "Error", "Enter all fields")
+                QMessageBox.about(self, "Error", "Enter all fields")
 
     def _update_shedule(self):
         self._update_monday_table()
+        self._update_tuesday_table()
 
 
 app = QApplication(sys.argv)
