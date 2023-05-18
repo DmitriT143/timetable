@@ -69,7 +69,7 @@ class MainWindow(QWidget):
 
         self.shbox1.addWidget(self.teacher_gbox)
 
-        #TODO self._create_teacher_table()
+        # TODO self._create_teacher_table()
 
         self.shedule_tab.setLayout(self.svbox)
 
@@ -100,17 +100,32 @@ class MainWindow(QWidget):
         self.tuesday_gbox.setLayout(self.mvbox)
 
     def _create_teacher_table(self):
-        self.monday_table = QTableWidget()
-        self.monday_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.teacher_table = QTableWidget()
+        self.teacher_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
 
-        self.monday_table.setColumnCount(2)
-        self.monday_table.setHorizontalHeaderLabels(["Subject", "Teacher"])
+        self.teacher_table.setColumnCount(2)
+        self.teacher_table.setHorizontalHeaderLabels(["Subject", "Teacher"])
 
         self._update_teacher_table()
         # TODO
         self.mvbox = QVBoxLayout()
-        self.mvbox.addWidget(self.monday_table)
-        self.monday_gbox.setLayout(self.mvbox)
+        self.mvbox.addWidget(self.teacher_table)
+        self.teacher_gbox.setLayout(self.mvbox)
+
+    def _update_teacher_table(self):
+        self.cursor.execute("SELECT teacher, named FROM subject ORDER BY num")
+        records = list(self.cursor.fetchall())
+
+        self.setRowCount(len(records))
+
+        for i, e in enumerate(records):
+            e = list(e)
+
+            self.teacher_table.setItem(i, 0,
+                                       QTableWidgetItem(str(e[0])))
+            self.teacher_table.setItem(i, 1,
+                                       QTableWidgetItem(str(e[1])))
+            self.teacher_table.resizeRowsToContents()
 
     def _update_monday_table(self):
         self.cursor.execute("SELECT time_start, time_end, subject FROM monday ORDER BY num")
@@ -134,27 +149,27 @@ class MainWindow(QWidget):
 
         self.monday_table.resizeRowsToContents()
 
-    def __update_tuesday_table(self):
+    def _update_tuesday_table(self):
         self.cursor.execute("SELECT time_start, time_end, subject FROM tuesday ORDER BY num")
         records = list(self.cursor.fetchall())
 
-        self.monday_table.setRowCount(len(records) + 1)
+        self.tuesday_table.setRowCount(len(records) + 1)
 
         for i, r in enumerate(records):
             r = list(r)
             joinButton = QPushButton("Join")
 
-            self.monday_table.setItem(i, 0,
-                                      QTableWidgetItem(str(r[0])))
-            self.monday_table.setItem(i, 1,
-                                      QTableWidgetItem(str(r[1])))
-            self.monday_table.setItem(i, 2,
-                                      QTableWidgetItem(str(r[2])))
-            self.monday_table.setCellWidget(i, 3, joinButton)
+            self.tuesday_table.setItem(i, 0,
+                                       QTableWidgetItem(str(r[0])))
+            self.tuesday_table.setItem(i, 1,
+                                       QTableWidgetItem(str(r[1])))
+            self.tuesday_table.setItem(i, 2,
+                                       QTableWidgetItem(str(r[2])))
+            self.tuesday_table.setCellWidget(i, 3, joinButton)
 
             joinButton.clicked.connect(lambda ch, num=i: self._change_day_from_table(num))
 
-        self.monday_table.resizeRowsToContents()
+        self.tuesday_table.resizeRowsToContents()
 
     def _change_day_from_table(self, rowNum):
         row = list()
