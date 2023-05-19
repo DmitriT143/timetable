@@ -241,7 +241,7 @@ class MainWindow(QWidget):
                         return
                     except:
                         print('Box not ready')
-        elif str(day) == '2' or '12':
+        if str(day) == '2' or '12':
             for i in range(self.tuesday_table.columnCount()):
                 try:
                     row.append(self.tuesday_table.item(rowNum, i).text())
@@ -255,27 +255,27 @@ class MainWindow(QWidget):
                 return
             except:
                 print('Box not ready')
-            if str(day) == '3' or '13':
-                if str(day) == '13':
+        if str(day) == '3' or '13':
+            if str(day) == '13':
+                try:
+                    self.cursor.execute(f"Delete from monday WHERE num={rowNum + 1}")
+                    self.conn.commit()
+                except:
+                    QMessageBox.about(self, "Error", "Something went wrong")
+            if str(day) == '3':
+                for i in range(self.monday_table.columnCount()):
                     try:
-                        self.cursor.execute(f"Delete from monday WHERE num={rowNum + 1}")
-                        self.conn.commit()
+                        row.append(self.monday_table.item(rowNum, i).text())
                     except:
-                        QMessageBox.about(self, "Error", "Something went wrong")
-                if str(day) == '3':
-                    for i in range(self.monday_table.columnCount()):
-                        try:
-                            row.append(self.monday_table.item(rowNum, i).text())
-                        except:
-                            row.append(None)
-                        try:
-                            self.cursor.execute(
-                                f"UPDATE wednesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
-                                f"WHERE num={rowNum + 1}")
-                            self.conn.commit()
-                            return
-                        except:
-                            print('Box not ready')
+                        row.append(None)
+                    try:
+                        self.cursor.execute(
+                            f"UPDATE wednesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
+                            f"WHERE num={rowNum + 1}")
+                        self.conn.commit()
+                        return
+                    except:
+                        print('Box not ready')
 
     def _update_shedule(self):
         self._update_monday_table()
