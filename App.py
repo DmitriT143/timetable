@@ -35,6 +35,7 @@ class MainWindow(QWidget):
 
         self.monday_gbox = QGroupBox("Monday")
         self.tuesday_gbox = QGroupBox("Tuesday")
+        self.wednesday_gbox = QGroupBox("Wednesday")
 
         self.svbox = QVBoxLayout()
         self.shbox1 = QHBoxLayout()
@@ -45,9 +46,11 @@ class MainWindow(QWidget):
 
         self.shbox1.addWidget(self.monday_gbox)
         self.shbox1.addWidget(self.tuesday_gbox)
+        self.shbox1.addWidget(self.wednesday_gbox)
 
         self._create_monday_table()
         self._create_tuesday_table()
+        self._create_wednesday_table()
 
         self.update_shedule_button = QPushButton("Update")
         self.shbox2.addWidget(self.update_shedule_button)
@@ -98,6 +101,19 @@ class MainWindow(QWidget):
         self.mvbox = QVBoxLayout()
         self.mvbox.addWidget(self.tuesday_table)
         self.tuesday_gbox.setLayout(self.mvbox)
+
+    def _create_wednesday_table(self):
+        self.wednesday_table = QTableWidget()
+        self.wednesday_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+
+        self.wednesday_table.setColumnCount(5)
+        self.wednesday_table.setHorizontalHeaderLabels(["Starts", "Ends", "Subject", "Modify", "Remove"])
+
+        self._update_wednesday_table()
+
+        self.mvbox = QVBoxLayout()
+        self.mvbox.addWidget(self.wednesday_table)
+        self.wednesday_gbox.setLayout(self.mvbox)
 
     def _create_teacher_table(self):
         self.teacher_table = QTableWidget()
@@ -173,49 +189,98 @@ class MainWindow(QWidget):
             self.tuesday_table.setCellWidget(i, 4, DeleteButton_tue)
 
             joinButton_tue.clicked.connect(lambda ch, num=i: self._change_day_from_table(num, 2))
+            DeleteButton_tue.clicked.connect(lambda ch, num=i: self.change_day_from_table(num, 12))
 
         self.tuesday_table.resizeRowsToContents()
 
+    def _update_wednesday_table(self):
+        self.cursor.execute("SELECT time_start, time_end, subject FROM wednesday ORDER BY num")
+        records = list(self.cursor.fetchall())
+
+        self.wednesday_table.setRowCount(len(records) + 2)
+
+        for i, r in enumerate(records):
+            r = list(r)
+            joinButton_tue = QPushButton("Join")
+            DeleteButton_tue = QPushButton("Delete")
+
+            self.wednesday_table.setItem(i, 0,
+                                         QTableWidgetItem(str(r[0])))
+            self.wednesday_table.setItem(i, 1,
+                                         QTableWidgetItem(str(r[1])))
+            self.wednesday_table.setItem(i, 2,
+                                         QTableWidgetItem(str(r[2])))
+            self.wednesday_table.setCellWidget(i, 3, joinButton_tue)
+            self.wednesday_table.setCellWidget(i, 4, DeleteButton_tue)
+
+            joinButton_tue.clicked.connect(lambda ch, num=i: self._change_day_from_table(num, 3))
+            DeleteButton_tue.clicked.connect(lambda ch, num=i: self.change_day_from_table(num, 13))
+
+        self.wednesday_table.resizeRowsToContents()
+
     def _change_day_from_table(self, rowNum, day):
         row = list()
-        if day == '1' or '11':
-            if day == '11':
+        if str(day) == '1' or '11':
+            if str(day) == '11':
                 try:
-                    self.cursor.execute(f"Delete from monday where num = {rowNum + 1}")
+                    self.cursor.execute(f"Delete from monday WHERE num={rowNum + 1}")
                     self.conn.commit()
                 except:
-                    QMessageBox.about(self, "Error", "Enter all fields")
-            if day == 1:
+                    QMessageBox.about(self, "Error", "Something went wrong")
+            if str(day) == '1':
                 for i in range(self.monday_table.columnCount()):
                     try:
                         row.append(self.monday_table.item(rowNum, i).text())
                     except:
                         row.append(None)
                     try:
-                        self.cursor.execute(f"UPDATE monday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
-                                            f"WHERE num={rowNum + 1}")
+                        self.cursor.execute(
+                            f"UPDATE monday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
+                            f"WHERE num={rowNum + 1}")
                         self.conn.commit()
                         return
                     except:
-                        QMessageBox.about(self, "Error", "Enter all fields")
-
-        if day == 2 or 12:
+                        print('Box not ready')
+        elif str(day) == '2' or '12':
             for i in range(self.tuesday_table.columnCount()):
                 try:
                     row.append(self.tuesday_table.item(rowNum, i).text())
                 except:
                     row.append(None)
             try:
-                self.cursor.execute(f"UPDATE tuesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
-                                    f"WHERE num={rowNum + 1}")
+                self.cursor.execute(
+                    f"UPDATE tuesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
+                    f"WHERE num={rowNum + 1}")
                 self.conn.commit()
                 return
             except:
-                QMessageBox.about(self, "Error", "Enter all fields")
+                print('Box not ready')
+            if str(day) == '3' or '13':
+                if str(day) == '13':
+                    try:
+                        self.cursor.execute(f"Delete from monday WHERE num={rowNum + 1}")
+                        self.conn.commit()
+                    except:
+                        QMessageBox.about(self, "Error", "Something went wrong")
+                if str(day) == '3':
+                    for i in range(self.monday_table.columnCount()):
+                        try:
+                            row.append(self.monday_table.item(rowNum, i).text())
+                        except:
+                            row.append(None)
+                        try:
+                            self.cursor.execute(
+                                f"UPDATE wednesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
+                                f"WHERE num={rowNum + 1}")
+                            self.conn.commit()
+                            return
+                        except:
+                            print('Box not ready')
 
     def _update_shedule(self):
         self._update_monday_table()
         self._update_tuesday_table()
+        self._update_wednesday_table()
 
 
 app = QApplication(sys.argv)

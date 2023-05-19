@@ -38,6 +38,19 @@ INSERT INTO tuesday(time_start, time_end, subject) VALUES ('13:10','14:45','');
 INSERT INTO tuesday(time_start, time_end, subject) VALUES ('15:25','17:00','');
 INSERT INTO tuesday(time_start, time_end, subject) VALUES ('17:25','19:00','');
 
+DROP TABLE IF EXISTS wednesday;
+CREATE TABLE wednesday(
+    num SERIAL PRIMARY KEY,
+    time_start VARCHAR(5),
+    time_end VARCHAR(5),
+    subject VARCHAR(25),
+    teacher VARCHAR(25));
+
+INSERT INTO wednesday(time_start, time_end, subject) VALUES ('9:30','11:05','');
+INSERT INTO wednesday(time_start, time_end, subject) VALUES ('11:20','12:55','');
+INSERT INTO wednesday(time_start, time_end, subject) VALUES ('13:10','14:45','');
+INSERT INTO wednesday(time_start, time_end, subject) VALUES ('15:25','17:00','');
+INSERT INTO wednesday(time_start, time_end, subject) VALUES ('17:25','19:00','');
 
 INSERT INTO timestamps(time_start,time_end) VALUES\
 
