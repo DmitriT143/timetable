@@ -163,8 +163,8 @@ class MainWindow(QWidget):
             self.monday_table.setCellWidget(i, 3, joinButton_mon)
             self.monday_table.setCellWidget(i, 4, DeleteButton_mon)
 
-            joinButton_mon.clicked.connect(lambda ch, num=i: self._change_day_from_table(num, 1))
-            DeleteButton_mon.clicked.connect(lambda ch, num=i: self._change_day_from_table(num), 11)
+            joinButton_mon.clicked.connect(lambda ch, num=i: self._change_monday_from_table(num))
+            DeleteButton_mon.clicked.connect(lambda ch, num=i: self._delete_monday_table(num))
 
         self.monday_table.resizeRowsToContents()
 
@@ -188,8 +188,8 @@ class MainWindow(QWidget):
             self.tuesday_table.setCellWidget(i, 3, joinButton_tue)
             self.tuesday_table.setCellWidget(i, 4, DeleteButton_tue)
 
-            joinButton_tue.clicked.connect(lambda ch, num=i: self._change_day_from_table(num, 2))
-            DeleteButton_tue.clicked.connect(lambda ch, num=i: self.change_day_from_table(num, 12))
+            joinButton_tue.clicked.connect(lambda ch, num=i: self._change_tuesday_from_table(num))
+            DeleteButton_tue.clicked.connect(lambda ch, num=i: self._delete_tuesday_table(num))
 
         self.tuesday_table.resizeRowsToContents()
 
@@ -213,69 +213,91 @@ class MainWindow(QWidget):
             self.wednesday_table.setCellWidget(i, 3, joinButton_tue)
             self.wednesday_table.setCellWidget(i, 4, DeleteButton_tue)
 
-            joinButton_tue.clicked.connect(lambda ch, num=i: self._change_day_from_table(num, 3))
-            DeleteButton_tue.clicked.connect(lambda ch, num=i: self.change_day_from_table(num, 13))
+            joinButton_tue.clicked.connect(lambda ch, num=i: self._change_wednesday_from_table(num))
+            DeleteButton_tue.clicked.connect(lambda ch, num=i: self._delete_wednesday_table(num))
 
         self.wednesday_table.resizeRowsToContents()
 
-    def _change_day_from_table(self, rowNum, day):
+    def _change_monday_from_table(self, rowNum):
         row = list()
-        if str(day) == '1' or '11':
-            if str(day) == '11':
+        for i in range(self.monday_table.columnCount()):
                 try:
-                    self.cursor.execute(f"Delete from monday WHERE num={rowNum + 1}")
+                    row.append(self.monday_table.item(rowNum, i).text())
+                except:
+                    row.append(None)
+                try:
+                    self.cursor.execute(
+                        f"UPDATE monday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
+                        f"WHERE num={rowNum + 1}")
                     self.conn.commit()
                 except:
-                    QMessageBox.about(self, "Error", "Something went wrong")
-            if str(day) == '1':
-                for i in range(self.monday_table.columnCount()):
-                    try:
-                        row.append(self.monday_table.item(rowNum, i).text())
-                    except:
-                        row.append(None)
-                    try:
-                        self.cursor.execute(
-                            f"UPDATE monday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
-                            f"WHERE num={rowNum + 1}")
-                        self.conn.commit()
-                        return
-                    except:
-                        print('Box not ready')
-        if str(day) == '2' or '12':
-            for i in range(self.tuesday_table.columnCount()):
+                    print("error")
+
+    def _change_tuesday_from_table(self, rowNum):
+        row = list()
+        for i in range(self.tuesday_table.columnCount()):
                 try:
                     row.append(self.tuesday_table.item(rowNum, i).text())
                 except:
                     row.append(None)
-            try:
-                self.cursor.execute(
-                    f"UPDATE tuesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
-                    f"WHERE num={rowNum + 1}")
-                self.conn.commit()
-                return
-            except:
-                print('Box not ready')
-        if str(day) == '3' or '13':
-            if str(day) == '13':
                 try:
-                    self.cursor.execute(f"Delete from monday WHERE num={rowNum + 1}")
+                    self.cursor.execute(
+                        f"UPDATE tuesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
+                        f"WHERE num={rowNum + 1}")
                     self.conn.commit()
                 except:
-                    QMessageBox.about(self, "Error", "Something went wrong")
-            if str(day) == '3':
-                for i in range(self.monday_table.columnCount()):
-                    try:
-                        row.append(self.monday_table.item(rowNum, i).text())
-                    except:
-                        row.append(None)
-                    try:
-                        self.cursor.execute(
-                            f"UPDATE wednesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
-                            f"WHERE num={rowNum + 1}")
-                        self.conn.commit()
-                        return
-                    except:
-                        print('Box not ready')
+                    print("error")
+
+    def _change_wednesday_from_table(self, rowNum):
+        row = list()
+        for i in range(self.wednesday_table.columnCount()):
+                try:
+                    row.append(self.wednesday_table.item(rowNum, i).text())
+                except:
+                    row.append(None)
+                try:
+                    self.cursor.execute(
+                        f"UPDATE wednesday set time_start='{row[0]}', time_end='{row[1]}', subject='{row[2]}'"
+                        f"WHERE num={rowNum + 1}")
+                    self.conn.commit()
+                except:
+                    print("error")
+
+    def _delete_monday_table(self, rowNum):
+        row = list()
+        try:
+            row.append(self.tuesday_table.item(rowNum, i).text())
+        except:
+            row.append(None)
+        try:
+            self.cursor.execute("Delete from monday WHERE num='{rowNum + 1}'")
+            self.conn.commit()
+        except:
+            self.conn.commit()
+
+    def _delete_tuesday_table(self, rowNum):
+        row = list()
+        try:
+            row.append(self.tuesday_table.item(rowNum, i).text())
+        except:
+            row.append(None)
+        try:
+            self.cursor.execute("Delete from tuesday WHERE num='{rowNum + 1}'")
+            self.conn.commit()
+        except:
+            self.conn.commit()
+
+    def _delete_wednesday_table(self, rowNum):
+        row = list()
+        try:
+            row.append(self.tuesday_table.item(rowNum, i).text())
+        except:
+            row.append(None)
+        try:
+            self.cursor.execute("Delete from wednesday WHERE num='{rowNum + 1}'")
+            self.conn.commit()
+        except:
+            self.conn.commit()
 
     def _update_shedule(self):
         self._update_monday_table()
